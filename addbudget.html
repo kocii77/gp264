@@ -1,0 +1,723 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>ExpenseBuddy | Add new budget</title>
+  <!-- Font Awesome 6 (free icons) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <!-- Google Fonts: modern sans-serif -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      background: linear-gradient(145deg, #e9eff7 0%, #dce3ec 100%);
+      font-family: 'Inter', sans-serif;
+      padding: 2rem 1.5rem;
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    /* main dashboard container */
+    .dashboard {
+      max-width: 780px;
+      width: 100%;
+      margin: 0 auto;
+    }
+
+    /* card style */
+    .card {
+      background: rgba(255, 255, 255, 0.96);
+      backdrop-filter: blur(0px);
+      border-radius: 2rem;
+      box-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.12), 0 1px 3px rgba(0, 0, 0, 0.02);
+      padding: 1.8rem 2rem;
+      transition: all 0.2s ease;
+      border: 1px solid rgba(255, 255, 255, 0.6);
+    }
+
+    /* header area */
+    .budget-header h1 {
+      font-size: 1.85rem;
+      font-weight: 700;
+      background: linear-gradient(135deg, #1e2b3c, #2c4b66);
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+      letter-spacing: -0.3px;
+      margin-bottom: 0.3rem;
+    }
+
+    .budget-header p {
+      font-size: 0.9rem;
+      color: #5b6e8c;
+      font-weight: 500;
+      border-left: 3px solid #3b82f6;
+      padding-left: 0.75rem;
+      margin-top: 0.25rem;
+    }
+
+    /* icon selection area */
+    .icon-section {
+      margin: 1.5rem 0 1.25rem 0;
+    }
+
+    .section-label {
+      font-weight: 600;
+      color: #1f2a44;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+    }
+
+    .section-label i {
+      color: #3b82f6;
+      font-size: 1rem;
+    }
+
+    .icon-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.8rem;
+      justify-content: flex-start;
+    }
+
+    .icon-btn {
+      background: #f8fafd;
+      border: 1.8px solid #e2e8f0;
+      border-radius: 1.5rem;
+      width: 60px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+      color: #2c3e4e;
+      cursor: pointer;
+      transition: all 0.2s cubic-bezier(0.2, 0.9, 0.4, 1.1);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+    }
+
+    .icon-btn i {
+      font-size: 1.8rem;
+    }
+
+    .icon-btn:hover {
+      background: #eef3fc;
+      transform: translateY(-3px);
+      border-color: #bdd3f0;
+    }
+
+    .icon-btn.active {
+      background: #eef2ff;
+      border-color: #3b82f6;
+      color: #1e40af;
+      box-shadow: 0 6px 14px rgba(59,130,246,0.2);
+      transform: scale(0.98);
+    }
+
+    /* input fields */
+    .input-group {
+      margin-bottom: 1.5rem;
+    }
+
+    .input-label {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-weight: 500;
+      font-size: 0.85rem;
+      color: #1f2a44;
+      margin-bottom: 0.5rem;
+    }
+
+    .input-label i {
+      color: #5b6e8c;
+      font-size: 0.9rem;
+    }
+
+    input {
+      width: 100%;
+      padding: 0.9rem 1rem;
+      border-radius: 1.2rem;
+      border: 1.5px solid #e2edf7;
+      background: #ffffff;
+      font-size: 1rem;
+      font-family: 'Inter', monospace;
+      transition: all 0.2s;
+      outline: none;
+      color: #1a2c3e;
+      font-weight: 500;
+    }
+
+    input:focus {
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59,130,246,0.15);
+    }
+
+    input::placeholder {
+      color: #b9c4d4;
+      font-weight: 400;
+    }
+
+    /* error & success messages */
+    .error-message {
+      background: #fee2e2;
+      color: #b91c1c;
+      padding: 0.7rem 1rem;
+      border-radius: 1rem;
+      font-size: 0.8rem;
+      font-weight: 500;
+      margin: 0.5rem 0 1rem 0;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      border-left: 4px solid #ef4444;
+    }
+
+    .success-toast {
+      background: #dcfce7;
+      color: #15803d;
+      padding: 0.7rem 1rem;
+      border-radius: 1rem;
+      font-size: 0.8rem;
+      font-weight: 500;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      border-left: 4px solid #22c55e;
+    }
+
+    /* button row */
+    .action-buttons {
+      display: flex;
+      justify-content: flex-end;
+      gap: 1rem;
+      margin-top: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      padding: 0.7rem 1.6rem;
+      border-radius: 2rem;
+      font-weight: 600;
+      font-size: 0.9rem;
+      border: none;
+      cursor: pointer;
+      transition: 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-family: 'Inter', sans-serif;
+    }
+
+    .btn-cancel {
+      background: #f1f5f9;
+      color: #475569;
+      border: 1px solid #e0e7ef;
+    }
+
+    .btn-cancel:hover {
+      background: #e6edf4;
+      color: #1e293b;
+      transform: translateY(-1px);
+    }
+
+    .btn-save {
+      background: #1e3a5f;
+      color: white;
+      box-shadow: 0 4px 8px rgba(0, 32, 64, 0.12);
+    }
+
+    .btn-save:hover {
+      background: #0f2c47;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 18px rgba(0, 0, 0, 0.1);
+    }
+
+    /* budget list section */
+    .budget-list-section {
+      margin-top: 2rem;
+    }
+
+    .list-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      margin-bottom: 1.2rem;
+    }
+
+    .list-header h2 {
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: #1f2e45;
+    }
+
+    .budget-count {
+      background: #eef2ff;
+      padding: 0.2rem 0.7rem;
+      border-radius: 30px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #2563eb;
+    }
+
+    .budget-items {
+      display: flex;
+      flex-direction: column;
+      gap: 0.9rem;
+    }
+
+    .budget-item {
+      background: #ffffffdd;
+      backdrop-filter: blur(2px);
+      border-radius: 1.3rem;
+      padding: 0.9rem 1.2rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 0.8rem;
+      transition: all 0.2s;
+      border: 1px solid #eef2fc;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.02);
+    }
+
+    .budget-info {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      flex: 2;
+    }
+
+    .budget-icon {
+      background: #eef3fc;
+      width: 44px;
+      height: 44px;
+      border-radius: 1.2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      color: #1f4a76;
+    }
+
+    .budget-details {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .budget-name {
+      font-weight: 700;
+      font-size: 1rem;
+      color: #0f2b3b;
+    }
+
+    .budget-limit {
+      font-size: 0.8rem;
+      color: #4b6b8f;
+      font-weight: 500;
+    }
+
+    .delete-btn {
+      background: transparent;
+      border: none;
+      font-size: 1.2rem;
+      color: #8ca3bc;
+      cursor: pointer;
+      padding: 0.4rem 0.7rem;
+      border-radius: 2rem;
+      transition: 0.2s;
+    }
+
+    .delete-btn:hover {
+      color: #dc2626;
+      background: #fee2e2;
+      transform: scale(1.05);
+    }
+
+    .empty-list {
+      text-align: center;
+      padding: 2rem;
+      background: #f8fafd;
+      border-radius: 1.5rem;
+      color: #6d7f9b;
+      font-weight: 500;
+    }
+
+    hr {
+      margin: 0.5rem 0 1.2rem;
+      border: none;
+      height: 1px;
+      background: linear-gradient(to right, #e2e8f0, transparent);
+    }
+
+    @media (max-width: 540px) {
+      .card {
+        padding: 1.3rem;
+      }
+      .icon-btn {
+        width: 50px;
+        height: 50px;
+        font-size: 1.5rem;
+      }
+      .budget-info {
+        flex-wrap: wrap;
+      }
+      .action-buttons {
+        justify-content: stretch;
+      }
+      .btn {
+        flex: 1;
+        justify-content: center;
+      }
+    }
+  </style>
+</head>
+<body>
+<div class="dashboard">
+  <!-- Main card: Add new budget -->
+  <div class="card">
+    <div class="budget-header">
+      <h1><i class="fas fa-wallet" style="font-size: 1.6rem; background: none; -webkit-background-clip: unset; color: #2c4b66;"></i> Add New Budget</h1>
+      <p>Choose category, icon & set expense limit (Ringgit Malaysia)</p>
+    </div>
+
+    <!-- Icon selector -->
+    <div class="icon-section">
+      <div class="section-label">
+        <i class="fas fa-icons"></i> <span>Choose icon:</span>
+      </div>
+      <div class="icon-grid" id="iconGrid"></div>
+    </div>
+
+    <!-- Name input -->
+    <div class="input-group">
+      <div class="input-label">
+        <i class="fas fa-tag"></i> <span>Budget Name</span>
+      </div>
+      <input type="text" id="budgetName" placeholder="Exp: Groceries, Rent, Vacation" autocomplete="off">
+    </div>
+
+    <!-- Limit input (Ringgit Malaysia) -->
+    <div class="input-group">
+      <div class="input-label">
+        <i class="fas fa-chart-line"></i> <span>Expense Limit (RM)</span>
+      </div>
+      <input type="number" id="budgetLimit" step="0.01" min="0.01" placeholder="0.00" value="">
+    </div>
+
+    <!-- dynamic global feedback -->
+    <div id="formFeedback"></div>
+
+    <!-- buttons row: Cancel + Save -->
+    <div class="action-buttons">
+      <button class="btn btn-cancel" id="cancelBtn"><i class="fas fa-times"></i> Cancel</button>
+      <button class="btn btn-save" id="saveBtn"><i class="fas fa-check-circle"></i> Save</button>
+    </div>
+  </div>
+
+  <!-- Budget list (dynamic) -->
+  <div class="budget-list-section">
+    <div class="list-header">
+      <h2><i class="fas fa-list-ul"></i> Budget List</h2>
+      <span class="budget-count" id="budgetCount">0</span>
+    </div>
+    <hr>
+    <div id="budgetListContainer" class="budget-items">
+      <!-- dynamic budgets injected here -->
+    </div>
+  </div>
+</div>
+
+<script>
+  // ---------- ICON COLLECTION (Fontawesome solid) ----------
+  const ICON_SET = [
+    { class: "fa-utensils", label: "Makanan" },
+    { class: "fa-cart-shopping", label: "Belian" },
+    { class: "fa-house", label: "Rumah" },
+    { class: "fa-car", label: "Pengangkutan" },
+    { class: "fa-film", label: "Hiburan" },
+    { class: "fa-heartbeat", label: "Kesihatan" },
+    { class: "fa-shirt", label: "Pakaian" },
+    { class: "fa-graduation-cap", label: "Pendidikan" },
+    { class: "fa-plane", label: "Perjalanan" },
+    { class: "fa-piggy-bank", label: "Simpanan" }
+  ];
+
+  // ----- Data -----
+  let budgetsData = [];     // each: { id, iconClass, name, limit }
+  let selectedIconClass = ICON_SET[0].class;   // default first icon active
+  let activeIconElement = null;
+
+  // DOM elements
+  const iconGrid = document.getElementById('iconGrid');
+  const budgetNameInput = document.getElementById('budgetName');
+  const budgetLimitInput = document.getElementById('budgetLimit');
+  const formFeedbackDiv = document.getElementById('formFeedback');
+  const budgetListContainer = document.getElementById('budgetListContainer');
+  const budgetCountSpan = document.getElementById('budgetCount');
+
+  // Helper: format currency in Malaysian Ringgit (MYR)
+  function formatCurrency(value) {
+    return new Intl.NumberFormat('ms-MY', { style: 'currency', currency: 'MYR', minimumFractionDigits: 2 }).format(value);
+  }
+
+  // show temporary success message (automatically disappears)
+  let timeoutId = null;
+  function showSuccessMessage(message) {
+    if (timeoutId) clearTimeout(timeoutId);
+    formFeedbackDiv.innerHTML = `<div class="success-toast"><i class="fas fa-check-circle"></i> ${message}</div>`;
+    timeoutId = setTimeout(() => {
+      if (formFeedbackDiv.firstChild && formFeedbackDiv.firstChild.classList?.contains('success-toast')) {
+        formFeedbackDiv.innerHTML = '';
+      }
+      timeoutId = null;
+    }, 2600);
+  }
+
+  function showErrorMessage(message) {
+    if (timeoutId) clearTimeout(timeoutId);
+    formFeedbackDiv.innerHTML = `<div class="error-message"><i class="fas fa-exclamation-triangle"></i> ${message}</div>`;
+    // error stays until next action or clear on cancel/save retry
+    timeoutId = setTimeout(() => {
+      if (formFeedbackDiv.firstChild && formFeedbackDiv.firstChild.classList?.contains('error-message')) {
+        formFeedbackDiv.innerHTML = '';
+      }
+      timeoutId = null;
+    }, 3500);
+  }
+
+  function clearFeedback() {
+    if (timeoutId) clearTimeout(timeoutId);
+    formFeedbackDiv.innerHTML = '';
+  }
+
+  // Render icon picker UI with active state
+  function renderIconPicker() {
+    iconGrid.innerHTML = '';
+    ICON_SET.forEach(icon => {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'icon-btn';
+      if (selectedIconClass === icon.class) {
+        btn.classList.add('active');
+        activeIconElement = btn;
+      }
+      btn.innerHTML = `<i class="fas ${icon.class}"></i>`;
+      btn.setAttribute('data-icon-class', icon.class);
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        if (activeIconElement) activeIconElement.classList.remove('active');
+        btn.classList.add('active');
+        activeIconElement = btn;
+        selectedIconClass = icon.class;
+        if (formFeedbackDiv.innerHTML.includes('pilih ikon')) {
+          clearFeedback();
+        }
+      });
+      iconGrid.appendChild(btn);
+    });
+  }
+
+  // reset form fields and icon to default (first icon), clear errors
+  function resetForm() {
+    budgetNameInput.value = '';
+    budgetLimitInput.value = '';
+    clearFeedback();
+    if (activeIconElement) activeIconElement.classList.remove('active');
+    selectedIconClass = ICON_SET[0].class;
+    renderIconPicker();   // re-render with updated active
+  }
+
+  // Save budget: validation + add to list
+  function addBudgetFromForm() {
+    const nameRaw = budgetNameInput.value.trim();
+    const limitRaw = budgetLimitInput.value.trim();
+    
+    if (!nameRaw) {
+      showErrorMessage("❌ Please enter budget name");
+      budgetNameInput.focus();
+      return false;
+    }
+    if (nameRaw.length > 40) {
+      showErrorMessage("📛 Budget name too long (maximum 40 characters)");
+      return false;
+    }
+    const limitNumber = parseFloat(limitRaw);
+    if (isNaN(limitNumber) || limitRaw === "" || limitNumber <= 0) {
+      showErrorMessage("💰 Please put a valid limit (larger than 0)");
+      budgetLimitInput.focus();
+      return false;
+    }
+    if (limitNumber > 9999999) {
+      showErrorMessage("💸 Limit too high, enter reasonable limit");
+      return false;
+    }
+    if (!selectedIconClass) {
+      showErrorMessage("🎨 Choose icon for you budget");
+      return false;
+    }
+    
+    const newBudget = {
+      id: Date.now(),
+      iconClass: selectedIconClass,
+      name: nameRaw,
+      limit: limitNumber
+    };
+    
+    budgetsData.push(newBudget);
+    renderBudgetList();
+    showSuccessMessage(`✨ "${nameRaw}" Successfully add budget of ${formatCurrency(limitNumber)}!`);
+    
+    // reset form after save
+    budgetNameInput.value = '';
+    budgetLimitInput.value = '';
+    if (activeIconElement) activeIconElement.classList.remove('active');
+    selectedIconClass = ICON_SET[0].class;
+    renderIconPicker();
+    clearFeedback();
+    return true;
+  }
+
+  // Render budget list from budgetsData
+  function renderBudgetList() {
+    if (!budgetListContainer) return;
+    if (budgetsData.length === 0) {
+      budgetListContainer.innerHTML = `<div class="empty-list"><i class="fas fa-coins"></i> No Budget for now. Use the form to set your first budget!</div>`;
+      budgetCountSpan.innerText = '0';
+      return;
+    }
+    
+    const sortedBudgets = [...budgetsData].sort((a,b) => b.id - a.id);
+    let html = '';
+    sortedBudgets.forEach(budget => {
+      html += `
+        <div class="budget-item" data-id="${budget.id}">
+          <div class="budget-info">
+            <div class="budget-icon">
+              <i class="fas ${budget.iconClass}"></i>
+            </div>
+            <div class="budget-details">
+              <span class="budget-name">${escapeHtml(budget.name)}</span>
+              <span class="budget-limit">${formatCurrency(budget.limit)} / Month</span>
+            </div>
+          </div>
+          <button class="delete-btn" data-id="${budget.id}" aria-label="Delete budget"><i class="fas fa-trash-alt"></i></button>
+        </div>
+      `;
+    });
+    budgetListContainer.innerHTML = html;
+    budgetCountSpan.innerText = budgetsData.length;
+    
+    document.querySelectorAll('.delete-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const id = parseInt(btn.getAttribute('data-id'));
+        deleteBudgetById(id);
+      });
+    });
+  }
+  
+  function escapeHtml(str) {
+    return str.replace(/[&<>]/g, function(m) {
+      if (m === '&') return '&amp;';
+      if (m === '<') return '&lt;';
+      if (m === '>') return '&gt;';
+      return m;
+    }).replace(/[\uD800-\uDBFF][\uDC00-\uDFFF]/g, function(c) {
+      return c;
+    });
+  }
+  
+  function deleteBudgetById(id) {
+    budgetsData = budgetsData.filter(budget => budget.id !== id);
+    renderBudgetList();
+    showSuccessMessage("🗑 Budget deleted");
+    setTimeout(() => {
+      if (formFeedbackDiv.innerHTML.includes('dipadam')) clearFeedback();
+    }, 1800);
+  }
+  
+  // Demo data in Ringgit Malaysia
+  function loadDemoBudgets() {
+    if (budgetsData.length === 0) {
+      budgetsData.push(
+        { id: 1001, iconClass: 'fa-cart-shopping', name: 'Barang dapur', limit: 450 },
+        { id: 1002, iconClass: 'fa-film', name: 'Hiburan', limit: 120 },
+        { id: 1003, iconClass: 'fa-car', name: 'Minyak & Pengangkutan', limit: 200 }
+      );
+      renderBudgetList();
+    }
+  }
+
+  function handleCancel() {
+    budgetNameInput.value = '';
+    budgetLimitInput.value = '';
+    clearFeedback();
+    if (activeIconElement) activeIconElement.classList.remove('active');
+    selectedIconClass = ICON_SET[0].class;
+    renderIconPicker();
+    const tempMsg = document.createElement('div');
+    tempMsg.className = 'success-toast';
+    tempMsg.style.opacity = '0.7';
+    tempMsg.innerHTML = '<i class="fas fa-undo-alt"></i> Form is emptied';
+    formFeedbackDiv.appendChild(tempMsg);
+    setTimeout(() => {
+      if (formFeedbackDiv.firstChild === tempMsg) formFeedbackDiv.innerHTML = '';
+    }, 1700);
+  }
+
+  function handleSave() {
+    addBudgetFromForm();
+  }
+  
+  function setupFormEnter() {
+    const inputs = [budgetNameInput, budgetLimitInput];
+    inputs.forEach(input => {
+      input.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          handleSave();
+        }
+      });
+    });
+  }
+  
+  function init() {
+    renderIconPicker();
+    loadDemoBudgets();
+    setupFormEnter();
+    
+    const cancelBtn = document.getElementById('cancelBtn');
+    const saveBtn = document.getElementById('saveBtn');
+    if (cancelBtn) cancelBtn.addEventListener('click', handleCancel);
+    if (saveBtn) saveBtn.addEventListener('click', handleSave);
+    
+    budgetLimitInput.addEventListener('blur', () => {
+      const val = budgetLimitInput.value.trim();
+      if (val !== "" && (isNaN(parseFloat(val)) || parseFloat(val) <= 0)) {
+        if (!formFeedbackDiv.innerHTML.includes('sah')) {
+          showErrorMessage("Please put positive number for budget limit");
+          setTimeout(() => clearFeedback(), 2500);
+        }
+      } else if (val !== "" && parseFloat(val) > 0 && formFeedbackDiv.innerHTML.includes('positif')) {
+        clearFeedback();
+      }
+    });
+  }
+  
+  init();
+</script>
+</body>
+</html>

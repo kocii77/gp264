@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ExpenseBuddy – Categories</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --sidebar-w: 200px;
+  --green: #2ecc71;
+  --red:   #e74c3c;
+  --blue:  #00bcd4;
+  --card:  88px;
+  --gap:   20px;
+  --step:  108px; /* 88 + 20 */
+}
+
+body {
+  font-family: 'Poppins', sans-serif;
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+  background: #fff;
+}
+
+/* ── SIDEBAR ── */
+.sidebar {
+  width: 200px;
+  min-height: 100vh;
+  background: #000;
+  display: flex;
+  flex-direction: column;
+  padding-top: 20px;
+  flex-shrink: 0;
+  z-index: 20;
+}
+.nav-item {
+  display: block;
+  padding: 28px 30px;
+  color: #fff;
+  text-decoration: none;
+  font-size: 15px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background .25s, padding-left .25s;
+  user-select: none;
+}
+.nav-item:hover  { background: #333; padding-left: 36px; }
+.nav-item.active { background: #222; }
+.nav-arrow {
+  display: inline-block;
+  margin-right: 10px;
+  font-size: 18px;
+  line-height: 1;
+  transition: transform .25s;
+}
+.nav-item:hover .nav-arrow { transform: translateX(5px); }
+
+/* ── PAGE SYSTEM ── */
+.page-wrapper { flex: 1; position: relative; overflow: hidden; }
+
+.page {
+  position: absolute; inset: 0;
+  background: #fff;
+  transition: transform .42s cubic-bezier(.4,0,.2,1), opacity .42s;
+}
+.page.active    { transform: translateX(0);     opacity: 1; pointer-events: all; }
+.page.off-right { transform: translateX(100%);  opacity: 0; pointer-events: none; }
+.page.off-left  { transform: translateX(-100%); opacity: 0; pointer-events: none; }
+
+/* ── SHARED BRAND ── */
+.brand {
+  position: absolute; top: 20px; right: 28px;
+  display: flex; align-items: center; gap: 8px;
+  font-size: 18px; font-weight: 700; z-index: 5;
+}
+.brand .ex  { color: #111; }
+.brand .bud { color: var(--green); }
+.brand-icon {
+  width: 36px; height: 36px;
+  background: linear-gradient(135deg,#2980b9,#2ecc71);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+}
+.brand-icon svg { width: 20px; height: 20px; fill: #fff; }
+
+/* ════════════════════════════════════
+   PAGE 1 – CATEGORIES
+════════════════════════════════════ */
+#pg-categories {
+  display: flex; flex-direction: column;
+  padding: 36px 40px; gap: 36px;
+}
+
+.section { display: flex; flex-direction: column; gap: 12px; }
+.section-title { font-size: 22px; font-weight: 700; }
+.section-title.income  { color: var(--green); }
+.section-title.expense { color: var(--red); }
+
+.carousel-row { display: flex; align-items: center; gap: 10px; }
+
+.arrow-btn {
+  flex-shrink: 0; width: 44px; height: 44px;
+  border: none; background: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  border-radius: 50%;
+  transition: background .15s, transform .15s;
+}
+.arrow-btn:hover  { background: #f0f0f0; transform: scale(1.1); }
+.arrow-btn:active { transform: scale(.94); }
+.arrow-btn:disabled { opacity: .22; cursor: default; }
+.arrow-btn:disabled:hover { background: none; transform: none; }
+.arrow-btn svg { width: 30px; height: 30px; }
+
+/* viewport — fixed width = exactly 5 cards */
+.c-viewport {
+  width: calc(5 * var(--card) + 4 * var(--gap)); /* 520px */
+  overflow: hidden; flex-shrink: 0;
+}
+
+.c-track {
+  display: flex; gap: var(--gap);
+  transition: transform .38s cubic-bezier(.4,0,.2,1);
+}
+
+/* ── ICON CARD ── */
+.icon-card {
+  flex-shrink: 0;
+  width: var(--card); height: var(--card);
+  border-radius: 50%; border: 2.5px solid #ddd;
+  background: #fff; position: relative;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: border-color .2s, box-shadow .2s, transform .18s;
+}
+.icon-card:hover {
+  border-color: #aaa; transform: translateY(-4px);
+  box-shadow: 0 8px 22px rgba(0,0,0,.12);
+}
+.icon-card.selected {
+  border: 3px solid var(--blue);
+  box-shadow: 0 0 0 5px rgba(0,188,212,.15);
+}
+.icon-card svg { width: 50px; height: 50px; }
+.icon-card::after {
+  content: attr(data-label);
+  position: absolute; bottom: -22px;
+  left: 50%; transform: translateX(-50%);
+  font-size: 10px; white-space: nowrap; color: #666;
+  opacity: 0; transition: opacity .2s; pointer-events: none;
+}
+.icon-card:hover::after { opacity: 1; }
+
+/* dots */
+.dots { display: flex; gap: 6px; margin-top: 4px; padding-left: 54px; }
+.dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: #ddd; cursor: pointer;
+  transition: background .25s, transform .25s;
+}
+.dot.on { background: #888; transform: scale(1.45); }
+
+/* ADD CATEGORY btn */
+.fab {
+  position: absolute; bottom: 32px; right: 32px;
+  background: var(--blue); color: #fff;
+  font-family: 'Poppins', sans-serif;
+  font-weight: 700; font-size: 14px; letter-spacing: .07em;
+  border: none; border-radius: 50px; padding: 18px 36px;
+  cursor: pointer;
+  box-shadow: 0 6px 24px rgba(0,188,212,.38);
+  transition: background .2s, transform .15s, box-shadow .2s;
+}
+.fab:hover {
+  background: #0097a7; transform: translateY(-2px);
+  box-shadow: 0 10px 28px rgba(0,188,212,.5);
+}
+
+/* ════════════════════════════════════
+   PAGE 2 – ADD NEW CATEGORY
+════════════════════════════════════ */
+#pg-add {
+  display: flex; flex-direction: column;
+}
+
+/* top bar */
+.topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 22px 36px 16px;
+  flex-shrink: 0;
+}
+.tb-btn {
+  font-family: 'Poppins', sans-serif;
+  font-size: 17px; font-weight: 700;
+  background: none; border: none; cursor: pointer;
+  color: #111; padding: 4px 0;
+  transition: opacity .2s;
+}
+.tb-btn:hover { opacity: .55; }
+
+/* blue banner */
+.add-banner {
+  align-self: center;
+  background: var(--blue); color: #fff;
+  font-weight: 700; font-size: 22px;
+  padding: 16px 48px; border-radius: 14px;
+  margin-bottom: 36px; flex-shrink: 0;
+  box-shadow: 0 4px 18px rgba(0,188,212,.35);
+}
+
+/* form body */
+.add-form {
+  flex: 1; padding: 0 56px;
+  display: flex; flex-direction: column; gap: 30px;
+  overflow-y: auto;
+}
+
+.form-row { display: flex; align-items: center; gap: 20px; }
+
+.f-label {
+  font-size: 18px; font-weight: 700; color: #111;
+  min-width: 100px; letter-spacing: .02em;
+}
+
+/* TYPE pills */
+.type-pill {
+  font-family: 'Poppins', sans-serif;
+  font-size: 13px; font-weight: 700; letter-spacing: .09em;
+  padding: 11px 30px; border-radius: 50px;
+  border: none; cursor: pointer;
+  background: #b0b0b0; color: #fff;
+  transition: background .2s, transform .15s, box-shadow .15s;
+}
+.type-pill:hover { transform: scale(1.05); }
+.type-pill.sel-income  { background: var(--green); box-shadow: 0 4px 14px rgba(46,204,113,.35); }
+.type-pill.sel-expense { background: var(--red);   box-shadow: 0 4px 14px rgba(231,76,60,.35); }
+
+/* NAME field */
+.name-field {
+  font-family: 'Poppins', sans-serif;
+  font-size: 15px; font-weight: 500;
+  padding: 14px 26px; border-radius: 50px;
+  border: none; background: #b0b0b0; color: #fff;
+  outline: none; width: 340px;
+  transition: background .2s, box-shadow .2s;
+}
+.name-field::placeholder { color: rgba(255,255,255,.65); }
+.name-field:focus { background: #888; box-shadow: 0 0 0 3px rgba(0,188,212,.3); }
+
+/* icon picker label */
+.pick-label {
+  font-size: 18px; font-weight: 700; color: #111;
+  letter-spacing: .02em;
+}
+
+/* add-page icon carousel — show 6 icons */
+.add-c-row { display: flex; align-items: center; gap: 10px; margin-top: 12px; }
+.add-c-vp {
+  width: calc(6 * var(--card) + 5 * var(--gap)); /* 628px */
+  overflow: hidden; flex-shrink: 0;
+}
+
+/* toast */
+.toast {
+  position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(20px);
+  background: #333; color: #fff;
+  font-size: 14px; font-weight: 600;
+  padding: 12px 28px; border-radius: 50px;
+  opacity: 0; pointer-events: none;
+  transition: opacity .3s, transform .3s;
+  z-index: 999;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <a href="dashboard.html" class="nav-item">
+    <span class="nav-arrow">›</span> Home
+  </a>
+  <a href="analysis.html" class="nav-item">
+    <span class="nav-arrow">›</span> Analysis
+  </a>
+  <a href="budget.html" class="nav-item">
+    <span class="nav-arrow">›</span> Budget
+  </a>
+  <a href="categories.html" class="nav-item active">
+    <span class="nav-arrow">›</span> Categories
+  </a>
+  <a href="settings.html" class="nav-item">
+    <span class="nav-arrow">›</span> Settings
+  </a>
+</aside>
+
+<div class="page-wrapper">
+
+  <!-- ══ PAGE 1: CATEGORIES ══ -->
+  <div class="page active" id="pg-categories">
+
+    <div class="brand">
+      <div class="brand-icon">
+        <svg viewBox="0 0 24 24"><path d="M21 18v1a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v1h-9a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h9zm-9-2h10V8H12v8zm4-2.5a1.5 1.5 0 1 1 0-3 1.5 1.5 0 0 1 0 3z"/></svg>
+      </div>
+      <span class="ex">Expense</span><span class="bud">Buddy</span>
+    </div>
+
+    <!-- Income -->
+    <div class="section">
+      <div class="section-title income">Income categories</div>
+      <div class="carousel-row">
+        <button class="arrow-btn" id="inc-prev" onclick="catShift('inc',-1)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#222" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <div class="c-viewport"><div class="c-track" id="inc-track"></div></div>
+        <button class="arrow-btn" id="inc-next" onclick="catShift('inc',1)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#222" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      </div>
+      <div class="dots" id="inc-dots"></div>
+    </div>
+
+    <!-- Expense -->
+    <div class="section">
+      <div class="section-title expense">Expense categories</div>
+      <div class="carousel-row">
+        <button class="arrow-btn" id="exp-prev" onclick="catShift('exp',-1)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#222" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+        </button>
+        <div class="c-viewport"><div class="c-track" id="exp-track"></div></div>
+        <button class="arrow-btn" id="exp-next" onclick="catShift('exp',1)">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#222" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+        </button>
+      </div>
+      <div class="dots" id="exp-dots"></div>
+    </div>
+
+    <button class="fab" onclick="openAddPage()">ADD CATEGORY</button>
+  </div>
+
+  <!-- ══ PAGE 2: ADD NEW CATEGORY ══ -->
+  <div class="page off-right" id="pg-add">
+
+    <div class="topbar">
+      <button class="tb-btn" onclick="closePage()">Cancel</button>
+      <button class="tb-btn" onclick="saveNew()">Save</button>
+    </div>
+
+    <div class="add-banner">Add new category</div>
+
+    <div class="add-form">
+
+      <!-- TYPE -->
+      <div class="form-row">
+        <span class="f-label">TYPE :</span>
+        <button class="type-pill sel-income" id="pill-inc" onclick="pickType('income')">INCOME</button>
+        <button class="type-pill" id="pill-exp" onclick="pickType('expense')">EXPENSE</button>
+      </div>
+
+      <!-- NAME -->
+      <div class="form-row">
+        <span class="f-label">NAME :</span>
+        <input class="name-field" id="cat-name" type="text" placeholder="Enter category name…" autocomplete="off"/>
+      </div>
+
+      <!-- ICON PICKER -->
+      <div>
+        <div class="pick-label">Select an icon :</div>
+        <div class="add-c-row">
+          <button class="arrow-btn" id="add-prev" onclick="addShift(-1)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#222" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+          </button>
+          <div class="add-c-vp">
+            <div class="c-track" id="add-track"></div>
+          </div>
+          <button class="arrow-btn" id="add-next" onclick="addShift(1)">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#222" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
+          </button>
+        </div>
+        <div class="dots" id="add-dots"></div>
+      </div>
+
+    </div>
+  </div>
+
+</div><!-- /page-wrapper -->
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ─────────────────────────────────────────────
+   ALL ICONS
+───────────────────────────────────────────── */
+const ICONS = [
+  { label:'Salary',        svg:`<circle cx="12" cy="12" r="10"/><path d="M12 6v2m0 8v2M9.5 9.5C9.5 8.1 10.6 7 12 7s2.5 1.1 2.5 2.5S13.4 12 12 12s-2.5 1.1-2.5 2.5S10.6 17 12 17s2.5-1.1 2.5-2.5" stroke-linecap="round"/>` },
+  { label:'Award',         svg:`<path d="M12 2l2.4 7.4H22l-6.2 4.5 2.4 7.4L12 17l-6.2 4.3 2.4-7.4L2 9.4h7.6z"/>` },
+  { label:'Profile',       svg:`<path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>` },
+  { label:'Shop',          svg:`<path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/>` },
+  { label:'Cashback',      svg:`<circle cx="12" cy="12" r="9"/><path d="M14.5 9.5A3 3 0 0 0 9 12a3 3 0 0 0 5.5 1.5"/><polyline points="15 8 15 12 11 12"/>` },
+  { label:'Freelance',     svg:`<rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-4 0v2"/><line x1="12" y1="12" x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/>` },
+  { label:'Gift',          svg:`<polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/>` },
+  { label:'Savings',       svg:`<ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>` },
+  { label:'Invest',        svg:`<polyline points="22 7 13.5 15.5 8.5 10.5 2 17"/><polyline points="16 7 22 7 22 13"/>` },
+  { label:'Rental',        svg:`<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>` },
+  { label:'Bonus',         svg:`<circle cx="12" cy="12" r="10"/><path d="M8 12h8M12 8v8"/>` },
+  { label:'Commission',    svg:`<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>` },
+  { label:'Food',          svg:`<path d="M17 8h1a4 4 0 1 1 0 8h-1"/><path d="M3 8h14v9a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V8z"/><line x1="6" y1="2" x2="6" y2="4"/><line x1="10" y1="2" x2="10" y2="4"/><line x1="14" y1="2" x2="14" y2="4"/>` },
+  { label:'Transport',     svg:`<rect x="1" y="3" width="15" height="13" rx="2"/><path d="M16 8h4l3 3v3h-7V8z"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>` },
+  { label:'Clothing',      svg:`<path d="M20.38 3.46L16 2l-4 4-4-4-4.38 1.46A2 2 0 0 0 2 5.32v13.36A1 1 0 0 0 3.32 20h17.36A1 1 0 0 0 22 18.68V5.32a2 2 0 0 0-1.62-1.86z"/>` },
+  { label:'Bills',         svg:`<path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="8" y1="13" x2="16" y2="13"/><line x1="8" y1="17" x2="16" y2="17"/>` },
+  { label:'Health',        svg:`<path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78L12 21.23l8.84-8.84a5.5 5.5 0 0 0 0-7.78z"/><line x1="12" y1="9" x2="12" y2="15"/><line x1="9" y1="12" x2="15" y2="12"/>` },
+  { label:'Groceries',     svg:`<path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/>` },
+  { label:'Education',     svg:`<path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/>` },
+  { label:'Entertainment', svg:`<polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2"/>` },
+  { label:'Travel',        svg:`<path d="M17.8 19.2L16 11l3.5-3.5C21 6 21 4 19.5 2.5S18 1 16.5 3.5L13 7 4.8 6.2c-.5-.1-.9.1-1.1.5l-.3.5c-.2.5-.1 1 .3 1.3L9 12l-2 3H4l-1 1 3 2 2 3 1-1v-3l3-2 3.5 5.3c.3.4.8.5 1.3.3l.5-.2c.4-.3.6-.7.5-1.2z"/>` },
+  { label:'Utilities',     svg:`<path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/>` },
+  { label:'Insurance',     svg:`<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/>` },
+  { label:'Subscriptions', svg:`<rect x="1" y="4" width="22" height="16" rx="2"/><line x1="1" y1="10" x2="23" y2="10"/>` },
+  { label:'Basketball',    svg:`<circle cx="12" cy="12" r="10"/><path d="M4.93 4.93c4.08 4.08 6.07 9.51 5.93 14.07M19.07 4.93c-4.08 4.08-6.07 9.51-5.93 14.07"/><path d="M2 12h20"/>` },
+  { label:'Phone',         svg:`<path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 1.25h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L7.91 8.89a16 16 0 0 0 6.13 6.13l.95-.95a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/>` },
+  { label:'Video',         svg:`<rect x="2" y="7" width="15" height="10" rx="2"/><polygon points="17 9 22 7 22 17 17 15"/>` },
+  { label:'Home',          svg:`<path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>` },
+  { label:'Music',         svg:`<path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/>` },
+  { label:'Camera',        svg:`<path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/>` },
+  { label:'Star',          svg:`<polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>` },
+  { label:'Coffee',        svg:`<path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="1" x2="6" y2="4"/><line x1="10" y1="1" x2="10" y2="4"/><line x1="14" y1="1" x2="14" y2="4"/>` },
+  { label:'Wifi',          svg:`<path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><circle cx="12" cy="20" r="1"/>` },
+];
+
+/* ─────────────────────────────────────────────
+   PAGE 1  –  CATEGORY CAROUSEL STATE
+───────────────────────────────────────────── */
+const CAT_VISIBLE = 5;
+const STEP = 108; // card(88) + gap(20)
+
+const cats = {
+  inc: { icons: ICONS.slice(0,12).map(i=>({...i})), offset:0, sel:null },
+  exp: { icons: ICONS.slice(12,24).map(i=>({...i})), offset:0, sel:null },
+};
+
+function makeCard(id, ic, onClick) {
+  const d = document.createElement('div');
+  d.className = 'icon-card';
+  d.id = id;
+  d.setAttribute('data-label', ic.label);
+  d.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor"
+    stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">${ic.svg}</svg>`;
+  d.addEventListener('click', onClick);
+  return d;
+}
+
+function buildCatTrack(t) {
+  const { icons } = cats[t];
+  const track = document.getElementById(`${t}-track`);
+  track.innerHTML = '';
+  icons.forEach((ic, i) => {
+    track.appendChild(makeCard(`${t}-c${i}`, ic, () => catSelect(t, i)));
+  });
+  buildCatDots(t);
+  catArrows(t);
+  catMove(t);
+}
+
+function catMove(t) {
+  document.getElementById(`${t}-track`).style.transform = `translateX(-${cats[t].offset * STEP}px)`;
+}
+function catMax(t) { return Math.max(0, cats[t].icons.length - CAT_VISIBLE); }
+
+function catShift(t, dir) {
+  cats[t].offset = Math.max(0, Math.min(catMax(t), cats[t].offset + dir));
+  catMove(t); catArrows(t); catDotsUpdate(t);
+}
+function catArrows(t) {
+  document.getElementById(`${t}-prev`).disabled = cats[t].offset === 0;
+  document.getElementById(`${t}-next`).disabled = cats[t].offset >= catMax(t);
+}
+function buildCatDots(t) {
+  const pages = Math.ceil(cats[t].icons.length / CAT_VISIBLE);
+  const c = document.getElementById(`${t}-dots`);
+  c.innerHTML = '';
+  for (let i = 0; i < pages; i++) {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i===0?' on':'');
+    d.addEventListener('click', () => {
+      cats[t].offset = Math.min(i * CAT_VISIBLE, catMax(t));
+      catMove(t); catArrows(t); catDotsUpdate(t);
+    });
+    c.appendChild(d);
+  }
+}
+function catDotsUpdate(t) {
+  const p = Math.floor(cats[t].offset / CAT_VISIBLE);
+  document.querySelectorAll(`#${t}-dots .dot`).forEach((d,i)=>d.classList.toggle('on', i===p));
+}
+function catSelect(t, idx) {
+  if (cats[t].sel !== null) {
+    const el = document.getElementById(`${t}-c${cats[t].sel}`);
+    if (el) el.classList.remove('selected');
+  }
+  cats[t].sel = idx;
+  document.getElementById(`${t}-c${idx}`).classList.add('selected');
+}
+
+buildCatTrack('inc');
+buildCatTrack('exp');
+
+/* ─────────────────────────────────────────────
+   PAGE NAVIGATION
+───────────────────────────────────────────── */
+function openAddPage() {
+  resetAddForm();
+  document.getElementById('pg-categories').className = 'page off-left';
+  document.getElementById('pg-add').className = 'page active';
+}
+function closePage() {
+  document.getElementById('pg-add').className = 'page off-right';
+  document.getElementById('pg-categories').className = 'page active';
+}
+
+/* ─────────────────────────────────────────────
+   PAGE 2  –  ADD FORM
+───────────────────────────────────────────── */
+const ADD_VISIBLE = 6;
+const addSt = { type:'income', icon:null, offset:0 };
+
+function resetAddForm() {
+  document.getElementById('cat-name').value = '';
+  addSt.type = 'income'; addSt.icon = null; addSt.offset = 0;
+  pickType('income');
+  buildAddTrack();
+}
+
+function pickType(t) {
+  addSt.type = t;
+  document.getElementById('pill-inc').className = 'type-pill' + (t==='income'?' sel-income':'');
+  document.getElementById('pill-exp').className = 'type-pill' + (t==='expense'?' sel-expense':'');
+}
+
+function buildAddTrack() {
+  const track = document.getElementById('add-track');
+  track.innerHTML = '';
+  ICONS.forEach((ic, i) => {
+    track.appendChild(makeCard(`add-c${i}`, ic, () => {
+      document.querySelectorAll('#add-track .icon-card').forEach(c=>c.classList.remove('selected'));
+      document.getElementById(`add-c${i}`).classList.add('selected');
+      addSt.icon = i;
+    }));
+  });
+  addSt.offset = 0;
+  addMove(); addArrows(); buildAddDots();
+}
+
+function addMove() {
+  document.getElementById('add-track').style.transform = `translateX(-${addSt.offset * STEP}px)`;
+}
+function addMax() { return Math.max(0, ICONS.length - ADD_VISIBLE); }
+
+function addShift(dir) {
+  addSt.offset = Math.max(0, Math.min(addMax(), addSt.offset + dir));
+  addMove(); addArrows(); addDotsUpdate();
+}
+function addArrows() {
+  document.getElementById('add-prev').disabled = addSt.offset === 0;
+  document.getElementById('add-next').disabled = addSt.offset >= addMax();
+}
+function buildAddDots() {
+  const pages = Math.ceil(ICONS.length / ADD_VISIBLE);
+  const c = document.getElementById('add-dots');
+  c.innerHTML = '';
+  for (let i = 0; i < pages; i++) {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i===0?' on':'');
+    d.addEventListener('click', () => {
+      addSt.offset = Math.min(i * ADD_VISIBLE, addMax());
+      addMove(); addArrows(); addDotsUpdate();
+    });
+    c.appendChild(d);
+  }
+}
+function addDotsUpdate() {
+  const p = Math.floor(addSt.offset / ADD_VISIBLE);
+  document.querySelectorAll('#add-dots .dot').forEach((d,i)=>d.classList.toggle('on', i===p));
+}
+
+/* ─────────────────────────────────────────────
+   SAVE
+───────────────────────────────────────────── */
+function saveNew() {
+  const name = document.getElementById('cat-name').value.trim();
+  if (!name) {
+    shake(document.getElementById('cat-name'));
+    showToast('Please enter a name'); return;
+  }
+  if (addSt.icon === null) {
+    showToast('Please select an icon'); return;
+  }
+  const t = addSt.type === 'income' ? 'inc' : 'exp';
+  cats[t].icons.push({ label: name, svg: ICONS[addSt.icon].svg });
+  buildCatTrack(t);
+  // jump to last page so newly added icon is visible
+  cats[t].offset = catMax(t);
+  catMove(t); catArrows(t); catDotsUpdate(t);
+
+  showToast(`"${name}" added!`);
+  closePage();
+}
+
+/* helpers */
+function shake(el) {
+  el.style.transition = 'none';
+  const s = [8,-8,6,-6,3,-3,0];
+  s.forEach((v,i) => setTimeout(()=>{ el.style.transform=`translateX(${v}px)`; }, i*55));
+  setTimeout(()=>{ el.style.transform=''; }, s.length*55+100);
+}
+
+let toastTimer;
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove('show'), 2200);
+}
+</script>
+</body>
+</html>

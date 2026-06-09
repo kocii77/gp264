@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ExpenseBuddy Dashboard</title>
+    <style>
+        * { box-sizing: border-box; font-family: Arial, sans-serif; }
+        body { margin: 0; display: flex; height: 100vh; background: #f7f9fc; }
+        
+       /* SIDEBAR */
+        .sidebar {
+            width: 200px;
+            min-height: 100vh;
+            background-color: black;
+            color: white;
+            position: fixed;
+            padding-top: 20px;
+        }
+
+        .sidebar h2 {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .nav-item {
+            display: block;
+            padding: 30px;
+            color: white;
+            text-decoration: none;
+            transition: 0.3s;
+        }
+
+        .arrow {
+            display: inline-block;
+            margin-right: 10px;
+            transition: 0.3s;
+        }
+
+        .nav-item:hover {
+            background-color: #333;
+            padding-left: 25px;
+        }
+
+        .nav-item:hover .arrow {
+            transform: translateX(5px);
+        }
+
+        .nav-item:hover {
+            background-color: #333;
+        }
+
+        /* Main Content */
+        .main { flex: 1; padding: 30px; overflow-y: auto; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; }
+        .logo { font-size: 24px; font-weight: bold; color: #333; }
+        
+        /* Controls (Native Selects for simplicity) */
+        select { background: #616161; color: white; padding: 10px 20px; border-radius: 5px; border: none; font-size: 16px; cursor: pointer; outline: none; margin-left: 10px; }
+        
+        /* Views */
+        .view { display: none; }
+        .view.active { display: block; }
+        .placeholder { font-size: 20px; color: #888; text-align: center; margin-top: 100px; }
+        
+        /* Analysis Layout */
+        .top-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; }
+        .chart { width: 200px; height: 200px; border-radius: 50%; background: conic-gradient(#5097f4 0% 55%, #9a62f3 55% 80%, #f7a26c 80% 95%, #ffe66f 95% 100%); display: flex; justify-content: center; align-items: center; }
+        .chart::after { content: ""; width: 100px; height: 100px; background: #f7f9fc; border-radius: 50%; }
+        .total-box { text-align: right; }
+        .total-box h3 { margin: 0; color: #666; font-weight: normal; }
+        .total-box h1 { margin: 5px 0 0; font-size: 50px; }
+
+        /* Category Grid */
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .card { display: flex; justify-content: space-between; align-items: center; padding: 20px; border-radius: 10px; font-weight: bold; font-size: 18px; box-shadow: 0 4px 6px rgba(0,0,0,0.05);}
+        .c-foods { background: #5097f4; color: #fff; }
+        .c-vehicle { background: #f7a26c; color: #fff; }
+        .c-edu { background: #9a62f3; color: #fff; }
+        .c-clothes { background: #ffe66f; color: #333; }
+    </style>
+</head>
+<body>
+<!-- SIDEBAR -->
+    <div class="sidebar">
+        <h2></h2>
+
+       <a href="dashboard.html" class="nav-item">
+            <span class="arrow">›</span> Home
+        </a>
+
+        <a href="analysis.html" class="nav-item">
+            <span class="arrow">›</span> Analysis
+        </a>
+
+        <a href="budget.html" class="nav-item">
+            <span class="arrow">›</span> Budget
+        </a>
+
+        <a href="categories.html" class="nav-item">
+            <span class="arrow">›</span> Categories
+        </a>
+
+        <a href="settings.html" class="nav-item">
+            <span class="arrow">›</span> Settings
+        </a>
+    </div>
+
+    <!-- Main -->
+    <main class="main">
+        <header class="header">
+            <div class="logo">💸 ExpenseBuddy</div>
+            <div>
+                <select id="typeSelect" onchange="updateData()">
+                    <option value="Expense">EXPENSE</option>
+                    <option value="Income">INCOME</option>
+                </select>
+                <select id="periodSelect" onchange="updateData()">
+                    <option value="Daily">DAILY</option>
+                    <option value="Weekly">WEEKLY</option>
+                    <option value="Fortnight">FORTNIGHT</option>
+                    <option value="Monthly" selected>MONTHLY</option>
+                </select>
+            </div>
+        </header>
+
+        <!-- Analysis View -->
+        <div id="analysis" class="view active">
+            <div class="top-row">
+                <div class="chart"></div>
+                <div class="total-box">
+                    <h3 id="totalLabel">Total expense :</h3>
+                    <h1 id="totalAmount">RM 0.00</h1>
+                </div>
+            </div>
+            <div class="grid">
+                <div class="card c-foods"><span>🍿 Foods</span><span id="amt-foods">RM 0.00</span></div>
+                <div class="card c-vehicle"><span>🚗 Vehicle</span><span id="amt-vehicle">RM 0.00</span></div>
+                <div class="card c-edu"><span>🎓 Education</span><span id="amt-edu">RM 0.00</span></div>
+                <div class="card c-clothes"><span>👕 Clothes</span><span id="amt-clothes">RM 0.00</span></div>
+            </div>
+        </div>
+
+        <!-- Other Views -->
+        <div id="home" class="view"><div class="placeholder">Home Screen</div></div>
+        <div id="budget" class="view"><div class="placeholder">Budget Screen</div></div>
+        <div id="categories" class="view"><div class="placeholder">Categories Screen</div></div>
+        <div id="settings" class="view"><div class="placeholder">Settings Screen</div></div>
+    </main>
+
+    <script>
+        // 1. Sidebar Navigation Logic
+        function switchView(viewId) {
+            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+            document.getElementById(viewId).classList.add('active');
+            
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            event.currentTarget.classList.add('active');
+        }
+
+        // 2. Mock Database for different combinations
+        const mockData = {
+            Expense: {
+                Daily: { total: 45.50, foods: 20, vehicle: 15.50, edu: 10, clothes: 0 },
+                Weekly: { total: 315.00, foods: 150, vehicle: 80, edu: 50, clothes: 35 },
+                Fortnight: { total: 600.00, foods: 300, vehicle: 150, edu: 100, clothes: 50 },
+                Monthly: { total: 1250.75, foods: 550.25, vehicle: 200, edu: 400.50, clothes: 100 }
+            },
+            Income: { // Mocking some income data for testing
+                Daily: { total: 100, foods: 0, vehicle: 0, edu: 0, clothes: 0 },
+                Weekly: { total: 700, foods: 0, vehicle: 0, edu: 0, clothes: 0 },
+                Fortnight: { total: 1400, foods: 0, vehicle: 0, edu: 0, clothes: 0 },
+                Monthly: { total: 3000, foods: 0, vehicle: 0, edu: 0, clothes: 0 }
+            }
+        };
+
+        // 3. Update Data Logic
+        function updateData() {
+            const type = document.getElementById('typeSelect').value;
+            const period = document.getElementById('periodSelect').value;
+            const data = mockData[type][period];
+
+            // Update Labels & Amounts
+            document.getElementById('totalLabel').innerText = `Total ${type.toLowerCase()} :`;
+            document.getElementById('totalAmount').innerText = `RM ${data.total.toFixed(2)}`;
+            
+            document.getElementById('amt-foods').innerText = `RM ${data.foods.toFixed(2)}`;
+            document.getElementById('amt-vehicle').innerText = `RM ${data.vehicle.toFixed(2)}`;
+            document.getElementById('amt-edu').innerText = `RM ${data.edu.toFixed(2)}`;
+            document.getElementById('amt-clothes').innerText = `RM ${data.clothes.toFixed(2)}`;
+        }
+
+        // Initialize dashboard with default data on load
+        updateData();
+    </script>
+</body>
+</html>
