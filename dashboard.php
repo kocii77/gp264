@@ -1,3 +1,13 @@
+<?php
+session_start();
+
+// If not logged in, redirect to login page
+if (!isset($_SESSION['nama_pengguna'])) {
+    header("Location: index.php");
+    exit();
+}
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -443,47 +453,48 @@
             color: #0d6efd;
         }
 
-        /* ── RESPONSIVE (media query from Lecture 4) ── */
-        @media only screen and (max-width: 768px) {
-            .sidebar {
-                width: 100%;
-                height: auto;
-                position: relative;
-                top: 0;
-                flex-direction: row;
-                flex-wrap: wrap;
-            }
-
-            .main {
-                margin-left: 0;
-            }
-
-            .sidebar-footer {
-                display: none;
-            }
-
-            .summary-card {
-                flex: 1 1 45%;
-            }
-
-            .chart-card {
-                flex: 1 1 100%;
-            }
-
-            .topnav-brand {
-                width: auto;
-            }
+ /* SIDEBAR */
+        .sidebar {
+            width: 200px;
+            min-height: 100vh;
+            background-color: black;
+            color: white;
+            position: fixed;
+            padding-top: 20px;
         }
 
-        @media only screen and (max-width: 480px) {
-            .summary-card {
-                flex: 1 1 100%;
-            }
-
-            .topnav-right .date-display {
-                display: none;
-            }
+        .sidebar h2 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 18px;
+            color: #40C4FF;
+            padding: 0 10px;
+            word-break: break-word;
         }
+
+        .nav-item {
+            display: block;
+            padding: 20px 30px; /* Adjusted padding slightly for cleaner spacing */
+            color: white;
+            text-decoration: none;
+            transition: 0.3s;
+        }
+
+        .arrow {
+            display: inline-block;
+            margin-right: 10px;
+            transition: 0.3s;
+        }
+
+        .nav-item:hover {
+            background-color: #333;
+            padding-left: 25px;
+        }
+
+        .nav-item:hover .arrow {
+            transform: translateX(5px);
+        }
+
     </style>
 </head>
 <body>
@@ -512,38 +523,29 @@
 </nav>
 
 <!-- ── SIDEBAR ── -->
-<div class="sidebar">
-    <div class="sidebar-section-label">Core</div>
 
-    <a href="dashboard.php" class="nav-item active">
-        <span class="nav-icon">🏠</span> Dashboard
-    </a>
+    <div class="sidebar">
 
-    <div class="sidebar-section-label">Finance</div>
+        <a href="dashboard.php" class="nav-item">
+            <span class="arrow">›</span> Home
+        </a>
 
-    <a href="analysis.html" class="nav-item">
-        <span class="nav-icon">📊</span> Analysis
-    </a>
+        <a href="analysis.html" class="nav-item">
+            <span class="arrow">›</span> Analysis
+        </a>
 
-    <a href="budget.html" class="nav-item">
-        <span class="nav-icon">🎯</span> Budget
-    </a>
+        <a href="addbudget.php" class="nav-item">
+            <span class="arrow">›</span> Budget
+        </a>
 
-    <a href="category.html" class="nav-item">
-        <span class="nav-icon">🏷️</span> Categories
-    </a>
+        <a href="categories.html" class="nav-item">
+            <span class="arrow">›</span> Categories
+        </a>
 
-    <div class="sidebar-section-label">Account</div>
-
-    <a href="settings.html" class="nav-item">
-        <span class="nav-icon">⚙️</span> Settings
-    </a>
-
-    <div class="sidebar-footer">
-        <div>Logged in as:</div>
-        <span>My Account</span>
+        <a href="settings.html" class="nav-item">
+            <span class="arrow">›</span> Settings
+        </a>
     </div>
-</div>
 
 <!-- ── MAIN CONTENT ── -->
 <div class="main">
@@ -663,7 +665,8 @@
 </div>
 
 <!-- Add Transaction Button -->
-<a href="add-transaction.html" class="add-btn">+</a>
+<a href="TransactionsPageExpenseBuddy.html" class="add-btn">+</a>
+
 
 
 <!-- ── JAVASCRIPT ── -->

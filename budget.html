@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,6 +8,7 @@
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; font-family: sans-serif; }
         body { display: flex; height: 100vh; background-color: #f7f9fc; }
+        
         /* SIDEBAR */
         .sidebar {
             width: 200px;
@@ -20,11 +22,15 @@
         .sidebar h2 {
             text-align: center;
             margin-bottom: 30px;
+            font-size: 18px;
+            color: #40C4FF;
+            padding: 0 10px;
+            word-break: break-word;
         }
 
         .nav-item {
             display: block;
-            padding: 30px;
+            padding: 20px 30px; /* Adjusted padding slightly for cleaner spacing */
             color: white;
             text-decoration: none;
             transition: 0.3s;
@@ -45,12 +51,8 @@
             transform: translateX(5px);
         }
 
-        .nav-item:hover {
-            background-color: #333;
-        }
-
         /* Main Content */
-        .main { flex: 1; padding: 30px; overflow-y: auto; display: flex; flex-direction: column; }
+        .main { flex: 1; padding: 30px; overflow-y: auto; display: flex; flex-direction: column; margin-left: 200px; }
         .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
         
         /* Dropdown */
@@ -75,15 +77,16 @@
         .add-btn { background: #40C4FF; color: #fff; font-weight: bold; border: none; padding: 15px 30px; border-radius: 30px; cursor: pointer; margin-top: auto; align-self: flex-end; }
         .add-btn:hover { background: #00B0FF; }
         #other-view { display: none; flex: 1; align-items: center; justify-content: center; flex-direction: column; color: #555; }
+        
+        .logout-btn { background: #ff4444; color: white; border-radius: 4px; padding: 8px 15px; text-decoration: none; font-size: 14px; }
+        .logout-btn:hover { background: #cc0000; }
     </style>
 </head>
 <body>
 
-    <!-- SIDEBAR -->
     <div class="sidebar">
-        <h2></h2>
 
-       <a href="dashboard.php" class="nav-item">
+        <a href="dashboard.php" class="nav-item">
             <span class="arrow">›</span> Home
         </a>
 
@@ -91,7 +94,7 @@
             <span class="arrow">›</span> Analysis
         </a>
 
-        <a href="addbudget.html" class="nav-item">
+        <a href="budget.html" class="nav-item">
             <span class="arrow">›</span> Budget
         </a>
 
@@ -115,7 +118,8 @@
                     <button onclick="setPeriod('MONTHLY')">Monthly</button>
                 </div>
             </div>
-            <h2> ExpenseBuddy</h2>
+            <h2>ExpenseBuddy</h2>
+            <a href="logout.php" class="logout-btn">Logout</a>
         </div>
 
         <div id="dashboard-view" style="display: flex; flex-direction: column; flex: 1;">
@@ -153,28 +157,7 @@
             document.getElementById('total-spent').innerText = `RM ${totalSpent.toFixed(2)}`;
         };
 
-        const addBudget = () => {
-            let amt = parseFloat(prompt("Enter budget limit amount (e.g., 100):"));
-            if (!amt || amt < 0) return alert("Invalid amount.");
-            let cat = prompt("Enter category name (e.g., Groceries):") || "Misc";
-            let exists = budgets.find(b => b.name.toLowerCase() === cat.toLowerCase());
-            
-            if (exists) exists.limit += amt;
-            else budgets.push({ name: cat, limit: amt, spent: 0, color: ['bg-blue', 'bg-green', 'bg-yellow'][budgets.length % 3], icon: '💰' });
-            renderUI();
-        };
-
         const setPeriod = (period) => document.getElementById('period').innerText = period;
-
-        const switchTab = (viewName, el) => {
-            document.querySelectorAll('.nav-item').forEach(nav => nav.classList.remove('active'));
-            el.classList.add('active');
-            
-            const isDash = viewName === 'Dashboard';
-            document.getElementById('dashboard-view').style.display = isDash ? 'flex' : 'none';
-            document.getElementById('other-view').style.display = isDash ? 'none' : 'flex';
-            if (!isDash) document.getElementById('other-title').innerText = `${viewName} View`;
-        };
 
         renderUI();
     </script>
