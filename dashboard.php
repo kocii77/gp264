@@ -1,6 +1,7 @@
 
 <html>
 <head>
+    
     <title>Expense Buddy - Dashboard</title>
 
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -225,6 +226,14 @@
 
     <!-- ADD BUTTON -->
     <a href="TransactionsPageExpenseBuddy.html" class="add-btn">+</a>
+
+    <?php
+session_start();
+if (!isset($_SESSION['nama_pengguna'])) {
+    header("Location: index.php"); // Boot them back if they aren't logged in
+    exit();
+}
+?>
 
 </body>
 </html>
