@@ -24,9 +24,9 @@ if (mysqli_num_rows($result) > 0) {
     
     // Identify role and redirect to the correct dashboard
     if ($row['peranan'] == 'admin') {
-        header("Location: admin_dashboard.php");
+        header("Location: admindashboard.php");
     } else {
-        header("Location: dashboard.html");
+        header("Location: dashboard.php");
     }
 } else {
     // If login details are wrong or user doesn't exist
