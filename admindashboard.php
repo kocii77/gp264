@@ -288,7 +288,7 @@
 <body>
 <div class="sidebar">
   <div class="logo-area">
-    <h1><i class="fas fa-chart-line"></i> <span>ExpenseBuddy</span></h1>
+    <h1><span>ExpenseBuddy</span></h1>
   </div>
   <div class="nav-menu">
     <div class="nav-item active" data-section="dashboard">
